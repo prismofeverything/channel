@@ -1,16 +1,37 @@
-(defstruct plasm :contents :membranes)
+(defstruct plasm :concentrations)
 (defstruct membrane :inside :outside :channels)
 (defstruct channel :permeability :activity :membrane)
 (defstruct ion :type :valence)
-(defstruct concentration :ion :level)
+(defstruct concentration :type :level)
 
 (def ions 
-     (map (fn [spec] (struct :ion (spec 0) (spec 1))))
+     (map #(struct :ion (% 0) (% 1)))
      [[:A -1]
       [:Na 1]
       [:Cl -1]
       [:K 1]
       [:Ca 2]])
+
+(defn valence-of 
+  [type]
+  (let [ion (some #(= type (:type %)) ions)]
+    (:valence ion)))
+
+(defn make-plasm
+  [concentrations]
+  (struct plasm 
+	  (let [contents (hash-map)]
+	    (reduce (fn [contents concentration] 
+			(assoc contents 
+			  (:type concentration) 
+			  (ref concentration)))
+		    content 
+		    concentrations))))
+
+(defn level-of
+  [type plasm]
+  (let [concentration (get (:concentrations plasm) type)]
+    (:level concentration)))
 
 (defn nernst
   [membrane type]
@@ -21,22 +42,8 @@
     (* valence ratio)))
     
 
-(defn make-plasm
-  [concentrations]
-  (struct plasm 
-	  (let [content (hash-map)]
-	    (reduce (fn [c spec]
-			(assoc content c spec))
-		    concentrations))
-	  []))
 
-(defn make-membrane
-  [inner-concentrations outer-concentrations channels]
-  (let [brane (struct membrane 
-		      (make-plasm inner-concentrations)
-		      (make-plasm outer-concentrations)
-		      channels)]
-    (assoc membrane :inside (
+  
 
 
 
