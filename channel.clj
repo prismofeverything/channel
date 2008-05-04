@@ -32,10 +32,11 @@
 
 (defn make-membrane
   [inner-concentrations outer-concentrations channels]
-  (struct membrane 
-	  (make-plasm inner-concentrations)
-	  (make-plasm outer-concentrations)
-	  []))
+  (let [brane (struct membrane 
+		      (make-plasm inner-concentrations)
+		      (make-plasm outer-concentrations)
+		      channels)]
+    (assoc membrane :inside (
 
 
 
