@@ -5,17 +5,22 @@
 (defstruct concentration :type :level)
 
 (def ions 
-     (map #(struct :ion (% 0) (% 1)))
-     [[:A -1]
-      [:Na 1]
-      [:Cl -1]
-      [:K 1]
-      [:Ca 2]])
+     (map #(struct ion (% 0) (% 1))
+	  [[:A -1]
+	   [:Na 1]
+	   [:Cl -1]
+	   [:K 1]
+	   [:Ca 2]]))
 
 (defn valence-of 
   [type]
-  (let [ion (some #(= type (:type %)) ions)]
+  (let [ion (first (filter #(= type (:type %)) ions))]
     (:valence ion)))
+
+(defn concentrations-from
+  [pairs]
+  (map #(struct concentration (% 0) (% 1))
+       pairs))
 
 (defn make-plasm
   "a plasm maintains its concentrations as refs, as they will change often"
@@ -45,7 +50,7 @@
       (alter concentration assoc :level (+ factor (:level @concentration))))))
 
 (defn make-channel
-  [
+  [] nil)
 
 (defn make-membrane
   [inside outside]
@@ -76,9 +81,30 @@
     (* valence ratio)))
 
 
+(defn test-channel
+  []
+  (sync nil
+    (let [inner (concentrations-from [[:A -147.0]
+				      [:K 140.0]
+				      [:Na 15.0]
+				      [:Cl 8.0]
+				      [:Ca 0.1]])
 
+	  outer (concentrations-from [[:A 25.0]
+				      [:K 3.0]
+				      [:Na 150.0]
+				      [:Cl 130.0]
+				      [:Ca 1.2]])
 
+	  inside (make-plasm inner)
+	  outside (make-plasm outer)
+	  membrane (make-membrane inside outside)]
 
+      (-> true 
+	  (and (= -1 (valence-of :A)))
+	  (and (= 15.0 (level-of inside :Na))))
+      (nernst membrane :A))))
+	
 
 
 
