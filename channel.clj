@@ -59,6 +59,21 @@
 	  outside 
 	  (ref [])))
 
+(defn exchange
+  [membrane type factor]
+  (sync nil
+    (alter-level (:inside membrane) type factor)
+    (alter-level (:outside membrane) type (- factor)))
+  membrane)
+
+(defn nernst
+  [membrane type]
+  (let [in (level-of (:inside membrane) type)
+	out (level-of (:outside membrane) type)
+	ratio (. Math (log (/ out in)))
+	valence (valence-of type)]
+    (* valence ratio)))
+
 (defn add-channel
   [membrane channel]
   (sync nil
@@ -66,25 +81,11 @@
 	  channels (:channels membrane)]
       (alter channels cons embedded @channels))))
 
-(defn exchange
-  [membrane type factor]
-  (sync nil
-    (alter-level (:inside membrane) type factor)
-    (alter-level (:outside membrane) type (- factor))))
-
-(defn nernst
-  [membrane type]
-  (let [in (level-of (:inside membrane) type)
-	out (level-of (:outside membrane) type)
-	ratio (. Math (log (/ out in)))
-	valence (:valence (type ions))]
-    (* valence ratio)))
-
 
 (defn test-channel
   []
   (sync nil
-    (let [inner (concentrations-from [[:A -147.0]
+    (let [inner (concentrations-from [[:A 147.0]
 				      [:K 140.0]
 				      [:Na 15.0]
 				      [:Cl 8.0]
@@ -100,10 +101,12 @@
 	  outside (make-plasm outer)
 	  membrane (make-membrane inside outside)]
 
-      (-> true 
-	  (and (= -1 (valence-of :A)))
-	  (and (= 15.0 (level-of inside :Na))))
-      (nernst membrane :A))))
+      (if (-> true
+	      (and (= -1 (valence-of :A)))
+	      (and (= 15.0 (level-of inside :Na)))
+	      (and (= 140.0 (level-of (:inside membrane) :K))))
+	membrane
+	"YOU DO NOT EXIST"))))
 	
 
 
