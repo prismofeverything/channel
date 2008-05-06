@@ -43,7 +43,7 @@
   (let [concentration (concentration-of plasm type)]
     (:level @concentration)))
 
-(defn alter-level
+(defn alter-level!
   [plasm type factor]
   (sync nil
     (let [concentration (concentration-of plasm type)]
@@ -59,11 +59,11 @@
 	  outside 
 	  (ref [])))
 
-(defn exchange
+(defn exchange!
   [membrane type factor]
   (sync nil
-    (alter-level (:inside membrane) type factor)
-    (alter-level (:outside membrane) type (- factor)))
+    (alter-level! (:inside membrane) type factor)
+    (alter-level! (:outside membrane) type (- factor)))
   membrane)
 
 (defn nernst
@@ -74,7 +74,7 @@
 	valence (valence-of type)]
     (* valence ratio)))
 
-(defn add-channel
+(defn add-channel!
   [membrane channel]
   (sync nil
     (let [embedded (assoc channel :membrane membrane)
